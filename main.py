@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import numpy as np
 
 
 '''
@@ -9,19 +10,35 @@ from bs4 import BeautifulSoup
 def highestPriceExtractor(inList):
     highestpriceSoup = inList.find(class_="normal_price")
     highestpriceSoup = str(highestpriceSoup)
-    print(highestpriceSoup)
     highestpriceloc1 = highestpriceSoup.find("data-price")
     highestpriceloc2 = highestpriceSoup.find("span>")
     highestprice = highestpriceSoup[highestpriceloc1:highestpriceloc2]
     highestpriceloc21 = highestprice.find(">") + 1
     highestpriceloc22 = highestprice.find("</")
     highestprice2 = highestprice[highestpriceloc21:highestpriceloc22]
-    return highestprice2
+
+    highestprice2 = highestprice2.replace("$",'')
+    highestprice2 = highestprice2.replace("USD", '')
+    return float(highestprice2)
 
 def lowestPriceExtractor(inList):
+    lowestpricearr = []
     lowestpriceSoup = inList.find(class_="sale_price")
     for lowestpriceSoup in lowestpriceSoup:
-        print(lowestpriceSoup)
+        lowestpricearr.append(lowestpriceSoup)
+    lowestpriceval = "".join(str(x) for x in lowestpricearr)
+    lowestpriceret = lowestpriceval.replace("$",'')
+    lowestpriceret = lowestpriceret.replace("USD", '')
+    return float(lowestpriceret)
+
+
+def isNextPage(soup):
+    page = soup.find("span", class_ = "pagebtn")
+    if not page:
+        return False
+    else:
+        return True
+
 
 
 
@@ -31,38 +48,41 @@ url = "https://steamcommunity.com/market/search?appid=730&q=case+key#p1_default_
 response = requests.get(url)
 
 soup = BeautifulSoup(response.text, features="html.parser")
-# print(soup, type(soup), sep= '\n')
 
 
 #list - all listings of page extracted
 list = soup.find_all("div", "market_listing_row market_recent_listing_row market_listing_searchresult")
 #Gets amount of listings
 listLen = len(list)
-#gets name of listings
-
-
-name = list[0].get("data-hash-name")
-
-#extracts lowest price
-lowestprice = lowestPriceExtractor(list[0])
-# lowestpriceSoup = list[0].find(class_ = "sale_price")
-# for lowestpriceSoup in lowestpriceSoup:
-#     print(lowestpriceSoup)
-
-#extracts highest price
-highestprice = highestPriceExtractor(list[0])
 
 
 
 
+#Gets listing in single page and puts in array
+#pricearr: name, lowets price, highest price
+nameArr = [0] * listLen
+priceArr = np.zeros((listLen, 2), dtype = float)
+i = 0
+for i in range(listLen):
+    name = list[i].get("data-hash-name")
+    #extracts lowest price
+    lowestprice = lowestPriceExtractor(list[i])
+    #extracts highest price
+    highestprice = highestPriceExtractor(list[i])
+    nameArr[i] = name
+    priceArr[i][0] = lowestprice
+    priceArr[i][1] = highestprice
+
+print(priceArr)
 
 
 
 
-print(list[0])
-print("===============================")
-print("Name:" + str(name))
-print("Lowest Price:" + str(lowestprice))
-print("Highest Price:" + str(highestprice))
+#
+# print(list[0])
+# print("===============================")
+# print("Name:" + str(name))
+# print("Lowest Price:" + str(lowestprice))
+# print("Highest Price:" + str(highestprice))
 
 

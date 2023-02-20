@@ -8,6 +8,7 @@ requests = "*"
 pip = "*"
 install = "*"
 beautifulsoup4 = "*"
+numpy = "*"
 
 [dev-packages]
 
