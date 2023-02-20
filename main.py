@@ -39,6 +39,43 @@ def isNextPage(soup):
     else:
         return True
 
+'''
+list - page to extract from
+return- names of each object
+'''
+def pageNameRetrieve(list):
+    # Gets listing in single page and puts in array
+    # pricearr: name, lowest price, highest price
+    listLen = len(list)
+    nameArr = [0] * listLen
+    i = 0
+    for i in range(listLen):
+        name = list[i].get("data-hash-name")
+        # extracts lowest price
+        nameArr[i] = name
+    return nameArr
+
+
+''''
+list - page to extract from
+return - price of each object
+'''
+def pageValueRetrieve(list):
+    # Gets listing in single page and puts in array
+    # pricearr: name, lowest price, highest price
+    listLen = len(list)
+    priceArr = np.zeros((listLen, 2), dtype=float)
+    i = 0
+    for i in range(listLen):
+        lowestprice = lowestPriceExtractor(list[i])
+        # extracts highest price
+        highestprice = highestPriceExtractor(list[i])
+        priceArr[i][0] = lowestprice
+        priceArr[i][1] = highestprice
+    return priceArr
+
+
+
 
 
 
@@ -60,29 +97,15 @@ listLen = len(list)
 
 #Gets listing in single page and puts in array
 #pricearr: name, lowets price, highest price
-nameArr = [0] * listLen
-priceArr = np.zeros((listLen, 2), dtype = float)
-i = 0
-for i in range(listLen):
-    name = list[i].get("data-hash-name")
-    #extracts lowest price
-    lowestprice = lowestPriceExtractor(list[i])
-    #extracts highest price
-    highestprice = highestPriceExtractor(list[i])
-    nameArr[i] = name
-    priceArr[i][0] = lowestprice
-    priceArr[i][1] = highestprice
 
+nameArr = pageNameRetrieve(list)
+priceArr = pageValueRetrieve(list)
+
+
+print(nameArr)
 print(priceArr)
 
 
 
-
-#
-# print(list[0])
-# print("===============================")
-# print("Name:" + str(name))
-# print("Lowest Price:" + str(lowestprice))
-# print("Highest Price:" + str(highestprice))
 
 
