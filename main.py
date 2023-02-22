@@ -2,6 +2,8 @@ from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 import numpy as np
 import requests
+from celery import Celery
+import time
 
 
 '''
@@ -91,8 +93,14 @@ def pageValueRetrieve(list):
     return priceArr
 
 def getData (url):
-    r = requests.get(url).json()
-    soup = BeautifulSoup(r['results_html'])
+    # time.sleep(3)
+    r = requests.get(url, headers={'User-agent': 'your bot 0.1'} )
+    while r.status_code == 429:
+        print("Sleeping for  seconds")
+        time.sleep(10)
+    rJ = r.json()
+    rH = rJ['results_html']
+    soup = BeautifulSoup(rH, 'html.parser')
     return soup
 
 
@@ -100,14 +108,20 @@ def getData (url):
 
 
 
+
+
+
+session = HTMLSession()
 url = "https://steamcommunity.com/market/search/render/?query=&start=0&count=10&search_descriptions=0&sort_column=popular&sort_dir=desc"
+
+app = Celery('task', broker='amqp://guest@localhost//')
 
 
 soup = getData(url)
 
 
 #list - all listings of page extracted
-list = soup.find_all("div", "market_listing_row market_recent_listing_row market_listing_searchresult")
+list = soup.find_all(class_ = "market_listing_row market_recent_listing_row market_listing_searchresult")
 #Gets amount of listings
 listLen = len(list)
 
@@ -119,7 +133,6 @@ priceArr = pageValueRetrieve(list)
 
 print(nameArr)
 print(priceArr)
-print(soup)
 
 url = getNextPage(url)
 
@@ -136,6 +149,8 @@ while True == True:
     # pricearr: name, lowets price, highest price
     nameArr2 = pageNameRetrieve(list)
     priceArr2 = pageValueRetrieve(list)
+    print("=========")
+    print(url)
     print(nameArr2)
     print(priceArr2)
 

@@ -10,6 +10,7 @@ install = "*"
 beautifulsoup4 = "*"
 numpy = "*"
 requests-html = "*"
+celery = "*"
 
 [dev-packages]
 
