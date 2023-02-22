@@ -96,8 +96,9 @@ def getData (url):
     # time.sleep(3)
     r = requests.get(url, headers={'User-agent': 'your bot 0.1'} )
     while r.status_code == 429:
-        print("Sleeping for  seconds")
-        time.sleep(10)
+        print("Retrying in 60 seconds")
+        time.sleep(60)
+        r = requests.get(url, headers={'User-agent': 'your bot 0.1'})
     rJ = r.json()
     rH = rJ['results_html']
     soup = BeautifulSoup(rH, 'html.parser')
