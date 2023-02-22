@@ -9,6 +9,7 @@ pip = "*"
 install = "*"
 beautifulsoup4 = "*"
 numpy = "*"
+requests-html = "*"
 
 [dev-packages]
 

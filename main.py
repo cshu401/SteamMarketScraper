@@ -1,6 +1,7 @@
-import requests
+from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 import numpy as np
+import requests
 
 
 '''
@@ -21,6 +22,9 @@ def highestPriceExtractor(inList):
     highestprice2 = highestprice2.replace("USD", '')
     return float(highestprice2)
 
+'''
+Retrieves the lowest price from a list
+'''
 def lowestPriceExtractor(inList):
     lowestpricearr = []
     lowestpriceSoup = inList.find(class_="sale_price")
@@ -32,8 +36,20 @@ def lowestPriceExtractor(inList):
     return float(lowestpriceret)
 
 
+def getNextPage(url):
+
+    firstPos = url.index("start=") + 6
+    lastPos = url.find("&count=10")
+    lastPart = url[lastPos: len(url)]
+
+    curpage = url[firstPos:lastPos]
+
+    nextpage = int(curpage) + 10
+    url = "https://steamcommunity.com/market/search/render/?query=&start=" + str(nextpage) + lastPart
+    return url
+
 def isNextPage(soup):
-    page = soup.find("span", class_ = "pagebtn")
+    page = soup.find("span", class_="pagebtn")
     if not page:
         return False
     else:
@@ -74,17 +90,20 @@ def pageValueRetrieve(list):
         priceArr[i][1] = highestprice
     return priceArr
 
+def getData (url):
+    r = requests.get(url).json()
+    soup = BeautifulSoup(r['results_html'])
+    return soup
 
 
 
 
 
 
-url = "https://steamcommunity.com/market/search?appid=730&q=case+key#p1_default_desc"
+url = "https://steamcommunity.com/market/search/render/?query=&start=0&count=10&search_descriptions=0&sort_column=popular&sort_dir=desc"
 
-response = requests.get(url)
 
-soup = BeautifulSoup(response.text, features="html.parser")
+soup = getData(url)
 
 
 #list - all listings of page extracted
@@ -92,18 +111,34 @@ list = soup.find_all("div", "market_listing_row market_recent_listing_row market
 #Gets amount of listings
 listLen = len(list)
 
-
-
-
 #Gets listing in single page and puts in array
 #pricearr: name, lowets price, highest price
 
 nameArr = pageNameRetrieve(list)
 priceArr = pageValueRetrieve(list)
 
-
 print(nameArr)
 print(priceArr)
+print(soup)
+
+url = getNextPage(url)
+
+
+
+while True == True:
+    url = getNextPage(url)
+    soup = getData(url)
+    # list - all listings of page extracted
+    list = soup.find_all("div", "market_listing_row market_recent_listing_row market_listing_searchresult")
+    # Gets amount of listings
+    listLen = len(list)
+    # Gets listing in single page and puts in array
+    # pricearr: name, lowets price, highest price
+    nameArr2 = pageNameRetrieve(list)
+    priceArr2 = pageValueRetrieve(list)
+    print(nameArr2)
+    print(priceArr2)
+
 
 
 
