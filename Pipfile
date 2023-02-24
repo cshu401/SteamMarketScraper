@@ -12,6 +12,8 @@ numpy = "*"
 requests-html = "*"
 celery = "*"
 pandas = "*"
+vulture = "*"
+openpyxl = "*"
 
 [dev-packages]
 

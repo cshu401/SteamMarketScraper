@@ -1,4 +1,3 @@
-from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 import numpy as np
 import requests
@@ -50,12 +49,6 @@ def getNextPage(url):
     url = "https://steamcommunity.com/market/search/render/?query=&start=" + str(nextpage) + lastPart
     return url
 
-def isNextPage(soup):
-    page = soup.find("span", class_="pagebtn")
-    if not page:
-        return False
-    else:
-        return True
 
 '''
 list - page to extract from
@@ -96,7 +89,7 @@ def getData (url):
     # time.sleep(3)
     r = requests.get(url, headers={'User-agent': 'your bot 0.1'} )
     while r.status_code == 429:
-        print("Retrying in 60 seconds")
+        print("HTML timeout: Retrying in 60 seconds, change IP if urgent")
         time.sleep(60)
         r = requests.get(url, headers={'User-agent': 'your bot 0.1'})
     rJ = r.json()
@@ -104,17 +97,6 @@ def getData (url):
     soup = BeautifulSoup(rH, 'html.parser')
     return soup
 
-'''
-arr1: base array
-arr2: array to be combined to
-arrPos: position arrMain is at
-'''
-def arrayCombine(arrMain, arr1, pos):
-    i = 0;
-    arrNew = arr1[:,pos]
-    for i in range(len(arrNew)):
-        arrMain.append(arrNew[i])
-    return arrMain
 
 
 
@@ -123,16 +105,21 @@ def arrayCombine(arrMain, arr1, pos):
 
 
 
-session = HTMLSession()
+
 url = "https://steamcommunity.com/market/search/render/?query=&start=0&count=10&search_descriptions=0&sort_column=popular&sort_dir=desc&appid=730"
 soup = getData(url)
+pagetoscrape = 10
 curpage = 0
-pagetoscrape = 5
 
-marketData = np.zeros((3,50), dtype = str)
 nameList = []
 lowestPriceList = []
 highestPriceList = []
+priceDifferenceList = []
+
+
+print("Please input amount of pages to scrape...")
+pagetoscrape = input()
+pagetoscrape = int(pagetoscrape)
 
 
 while curpage < pagetoscrape:
@@ -153,21 +140,16 @@ while curpage < pagetoscrape:
         lowestpricearr[i] = priceArr[i][0]
         highestpricearr[i] = priceArr[i][1]
         i = i + 1
-    marketData = np.concatenate((nameArrCur,lowestpricearr,highestpricearr)).reshape(3,10)
-
-    nameList = np.append(nameList, nameArrCur)
-    lowestPriceList = np.append(lowestPriceList,lowestpricearr)
-    highestPriceList = np.append(highestPriceList, highestpricearr)
-
-
-
-
-
-
-
+    try:
+        nameList = np.append(nameList, nameArrCur)
+        lowestPriceList = np.append(lowestPriceList, lowestpricearr)
+        highestPriceList = np.append(highestPriceList, highestpricearr)
+    except:
+        print("Shape Error Occured")
 
     print("=========")
     print(url)
+    print("Current Page:" + str(curpage))
 
     curpage = curpage + 1
     url = getNextPage(url)
@@ -175,8 +157,13 @@ while curpage < pagetoscrape:
 print("=========")
 print("=========")
 
-df = pd.DataFrame({"Name": nameList, "LowestPrice": lowestPriceList, "HighestPrice": highestPriceList}, )
+priceDifferenceList = np.subtract(highestPriceList, lowestPriceList)
+
+
+df = pd.DataFrame({"Name": nameList, "LowestPrice": lowestPriceList, "HighestPrice": highestPriceList , "PriceDifference": priceDifferenceList})
+df = df.sort_values(by = 'PriceDifference', ascending = False)
 print(df)
+gfg_csv_data = df.to_excel("SteamScrapedData.xlsx")
 
 
 
