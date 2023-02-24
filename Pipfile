@@ -12,6 +12,9 @@ numpy = "*"
 requests-html = "*"
 celery = "*"
 pandas = "*"
+vulture = "*"
+openpyxl = "*"
+cx-freeze = "*"
 
 [dev-packages]
 
