@@ -11,6 +11,7 @@ beautifulsoup4 = "*"
 numpy = "*"
 requests-html = "*"
 celery = "*"
+pandas = "*"
 
 [dev-packages]
 
